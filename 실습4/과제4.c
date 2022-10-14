@@ -19,13 +19,13 @@ void sizeUpArray(int **array, int *max_size) //배열의 저장공간을 2배로
     *max_size *= 2;
 }
 
-void push(int *stack, int item, int *stack_top, int *max_stack_size)
+// stack은 이중포인터로 받는다!!!!**
+void push(int **stack, int item, int *stack_top, int *max_stack_size)
 {
     if (*stack_top == *max_stack_size - 1) // stack full
-        sizeUpArray(&stack, max_stack_size);
-    printf("== stack[%d] : %d ==\n", *stack_top, stack[*stack_top]);
-    stack[++(*stack_top)] = item;
-    printf("== stack[%d] : %d ==\n", *stack_top, stack[*stack_top]);
+        sizeUpArray(stack, max_stack_size);
+
+    (*stack)[++(*stack_top)] = item;
 }
 
 int pop(int *stack, int *stack_top)
@@ -51,15 +51,16 @@ void sortQueue(int *queue, int *queue_f, int *queue_r, int *now_queue_size, int 
     }
     *queue_f = -1;
     *queue_r = *now_queue_size - 1;
+    printf("*** 큐 정렬 완료 ***\n");
 }
 
-void addQ(int *queue, int item, int *queue_f, int *queue_r, int *now_queue_size, int *max_queue_size)
+void addQ(int **queue, int item, int *queue_f, int *queue_r, int *now_queue_size, int *max_queue_size)
 {
     if (*queue_f == -1 && *queue_r == *max_queue_size - 1) // queue full
-        sizeUpArray(&queue, max_queue_size);
+        sizeUpArray(queue, max_queue_size);
     else if (*queue_r == *max_queue_size - 1) //큐의 공간이 남아서 큐를 정렬해주기
-        sortQueue(queue, queue_f, queue_r, now_queue_size, max_queue_size);
-    queue[++(*queue_r)] = item;
+        sortQueue(*queue, queue_f, queue_r, now_queue_size, max_queue_size);
+    (*queue)[++(*queue_r)] = item;
     (*now_queue_size)++;
 }
 
@@ -74,15 +75,16 @@ int deleteQ(int *queue, int *queue_f, int *queue_r, int *now_queue_size, int *ma
     return queue[++(*queue_f)];
 }
 
-void addCQ(int *circle_queue, int item, int *queue_f, int *queue_r, int *now_c_queue_size, int *max_c_queue_size)
+void addCQ(int **circle_queue, int item, int *queue_f, int *queue_r, int *now_c_queue_size, int *max_c_queue_size)
 {
     if (*queue_f == *queue_r && *now_c_queue_size == *max_c_queue_size) // queue full
     {
-        sortQueue(circle_queue, queue_f, queue_r, now_c_queue_size, max_c_queue_size);
-        sizeUpArray(&circle_queue, max_c_queue_size);
+        sortQueue(*circle_queue, queue_f, queue_r, now_c_queue_size, max_c_queue_size);
+        sizeUpArray(circle_queue, max_c_queue_size);
+        *queue_f = *max_c_queue_size - 1;
     }
     *queue_r = (*queue_r + 1) % *max_c_queue_size;
-    circle_queue[*queue_r] = item;
+    (*circle_queue)[*queue_r] = item;
     (*now_c_queue_size)++;
 }
 
@@ -101,7 +103,7 @@ int deleteCQ(int *circle_queue, int *queue_f, int *queue_r, int *now_c_queue_siz
 int main(void)
 {
     int *stack, *queue, *circle_queue, menu, item;
-    int max_stack_size = 5, max_queue_size = 5, max_c_queue_size = 5;
+    int max_stack_size = 10, max_queue_size = 10, max_c_queue_size = 10;
     int stack_top = -1, now_queue_size = 0, now_c_queue_size = 0;
     int queue_f = -1, queue_r = -1;
 
@@ -127,7 +129,8 @@ int main(void)
         {
             printf("push item >> ");
             scanf("%d", &item);
-            push(stack, item, &stack_top, &max_stack_size);
+            // push(stack, item, &stack_top, &max_stack_size);
+            push(&stack, item, &stack_top, &max_stack_size);
         }
         else // pop
             printf("pop item >> %d 삭제!\n", pop(stack, &stack_top));
@@ -156,7 +159,7 @@ int main(void)
         {
             printf("addQ item >> ");
             scanf("%d", &item);
-            addQ(queue, item, &queue_f, &queue_r, &now_queue_size, &max_queue_size);
+            addQ(&queue, item, &queue_f, &queue_r, &now_queue_size, &max_queue_size);
         }
         else // delete
             printf("pop item >> %d 삭제!\n", deleteQ(queue, &queue_f, &queue_r, &now_queue_size, &max_queue_size));
@@ -169,8 +172,8 @@ int main(void)
 
     // ==================== 4.3 원형 큐 ====================
     printf("4.3. 원형 큐\n");
-    queue_f = 2;
-    queue_r = 2;
+    queue_f = 4;
+    queue_r = 4;
     while (1)
     {
         printf("원형 큐 - (1.addCQ / 2.deleteCQ / -1.종료) >> ");
@@ -187,7 +190,7 @@ int main(void)
         {
             printf("addCQ item >> ");
             scanf("%d", &item);
-            addCQ(circle_queue, item, &queue_f, &queue_r, &now_c_queue_size, &max_c_queue_size);
+            addCQ(&circle_queue, item, &queue_f, &queue_r, &now_c_queue_size, &max_c_queue_size);
         }
         else // delete
             printf("pop item >> %d 삭제!\n", deleteCQ(circle_queue, &queue_f, &queue_r, &now_c_queue_size, &max_c_queue_size));
