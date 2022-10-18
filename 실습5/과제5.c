@@ -144,12 +144,19 @@ void postfix(char *expr, char *new_expr)
         }
         else
         {
-            while (isp[stack[stack_top]] >= icp[token]) //연산자 우선순위에 따라 pushP or popP
-                new_expr[++new_idx] = printToken(popP(stack, &stack_top));
+            if (stack_top != -1)
+            {                                               // stack이 비었을 때는 무조건 추가
+                while (isp[stack[stack_top]] >= icp[token]) //연산자 우선순위에 따라 pushP or popP
+                    new_expr[++new_idx] = printToken(popP(stack, &stack_top));
+            }
             pushP(stack, &stack_top, token);
         }
-        printf("    %-5c|  %-20s|   %-4d|  %s\n", symbol, printStack(stack, stack_top), stack_top, new_expr);
+        char *print_stack = printStack(stack, stack_top);
+        printf("    %-5c|  %-20s|   %-4d|  %s\n", symbol, print_stack, stack_top, new_expr);
+        free(print_stack);
     }
+    while (stack_top > -1)
+        new_expr[++new_idx] = printToken(popP(stack, &stack_top));
     new_expr[++new_idx] = printToken(eos);
     printf("*** Postfix 변환 완료! ***\nPostfix : ");
     for (int i = 0; i < new_idx; i++)
@@ -214,7 +221,7 @@ int eval(char *expr)
 
 int main(void)
 {
-    char expr[STACK_MAX_SIZE], new_expr[STACK_MAX_SIZE];
+    char expr[STACK_MAX_SIZE] = "", new_expr[STACK_MAX_SIZE] = ""; //초기화 중요 ***
     int result;
 
     printf("Infix 수식 입력 >> ");
